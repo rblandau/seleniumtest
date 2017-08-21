@@ -305,6 +305,21 @@ def fnsSaveMemberPicture(driver, mysMemberName):
         with open(sOutputFile, 'w') as fh:
             sOutput = json.dumps(lPhotoUrl)
             print >> fh, sOutput
+    
+    # now try to get actual pictures.
+    elist = driver.find_elements_by_tag_name('img')
+    for idx in range(len(elist)):
+        fname = "pic2%s.png" % (idx)
+        NTRC.ntrace(0, "proc img|%s| at|%s|" % (fname, elist[idx].rect))
+        with open(fname, 'w') as fh:
+            print >> fh, elist[idx].screenshot_as_png
+
+    
+    
+    
+    
+    
+    
     return sOutputFile
 
 
