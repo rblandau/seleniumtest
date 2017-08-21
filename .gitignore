@@ -1,0 +1,4 @@
+files/*.json
+files/*.txt
+geckodriver.log
+*.pyc
