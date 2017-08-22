@@ -147,7 +147,8 @@ class CG(object):
     sLoginAcct = None           # From external credentials file.
     sLoginPw = None             # From external credentials file.
     sSubdirForFiles = "./files"
-    nWaitTimePerPage = 5        # Seconds after getting page
+    nWaitAfterPageLoad = 2      # Seconds after request before we look at it.
+    nWaitTimePerPage = 4        # Seconds after getting page data, slowdown.
     lFields = [                 # What fields to retrieve from page.
             "Display name", 
             "Email", 
@@ -214,27 +215,28 @@ def fntGetAllURLs(driver, mylUrls):
     nGotMany = 0
     sGotLast = None
     for sUrl in mylUrls:
-        sGotLast = fnlGetOneURL(driver, sUrl)
         nGotMany += 1
+        sGotLast = fnlGetOneURL(driver, sUrl, nGotMany)
         NTRC.ntrace(3, "proc getting url |%s|=|%s|" % (nGotMany, sUrl))
     return (nGotMany, sGotLast)
 
 
 # f n l G e t O n e U R L 
 @ntrace
-def fnlGetOneURL(driver, mysUrl):
+def fnlGetOneURL(driver, mysUrl, mynNumber):
     ''' Retrieve and save the page for a single URL. '''
     driver.get(mysUrl)
     memberDatum = driver.wait.until(EC.visibility_of_element_located(
         (By.XPATH, "//table[@class='tool-teaching-staff']")))
+    time.sleep(g.nWaitAfterPageLoad)
     memberNameElement = driver.find_element_by_xpath(
         "//table//*[contains(text(),'Display name')]/following-sibling::td")      
     memberName = memberNameElement.text
-    NTRC.ntrace(3, "proc member|%s| from element|%s|" 
-        % (memberName, memberNameElement))
+    NTRC.ntrace(3, "proc member|%s||%s| from element|%s|" 
+        % (memberName, mynNumber, memberNameElement))
     sPage = driver.find_element_by_xpath("//body").text
     # No good, gets only the text, not the HTML structure.
-    NTRC.ntrace(0, "proc getting |%s|" % (memberName))
+    NTRC.ntrace(0, "proc getting |%s| |%s|" % (mynNumber, memberName))
     fnsWriteMemberDataFile(driver, memberName)    
     fnsSaveMemberPicture(driver, memberName)
     ### TEMP  Keep harvard.edu from thinking we are a robot.
@@ -264,6 +266,7 @@ def fnsWriteMemberDataFile(driver, mysMemberName):
     #  Escape the funny characters with json lib, and read them back.
     sOutput = json.dumps(dFields)
     dFields["SafeDict"] = sOutput
+    dFields["RawHTML"] = driver.page_source
     #sFullOutput = fnsGentlyFormat(g.sOutputFormat, dFields)
     #dFields["FullOutput"] = sFullOutput
     sOutput = json.dumps(dFields)
