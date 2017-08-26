@@ -1,4 +1,5 @@
 files/*.json
 files/*.txt
+files-prev
 geckodriver.log
 *.pyc
