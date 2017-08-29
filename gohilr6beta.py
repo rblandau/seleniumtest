@@ -350,6 +350,26 @@ def fnsSaveMemberPicture(driver, mysMemberName):
         with open(sOutputFile, 'w') as fh:
             sOutput = json.dumps(lPhotoUrl)
             print >> fh, sOutput
+
+    # Now try to get the actual picture file.
+    @ntrace
+    def fnoGetReq(url, auth, *otherargs):
+        rr = requests.get(url, auth=auth, *otherargs)
+        return rr
+    if lPhotoUrl:                   # if there is any picture...
+        sPhotoUrl = lPhotoUrl[0]
+        tAuthCreds = ("", "")
+        tAuthCreds = (g.sLoginAcct, g.sLoginPw)
+        oReqReturn = fnoGetReq(url=sPhotoUrl, auth=tAuthCreds)
+        sPhotoMaybe = oReqReturn.content
+        sSortofName = "%s_photo" % (mysMemberName)
+        sOutputFile = fnsPreventDuplicateFilename(sSortofName, 
+                    g.sSubdirForFiles, "png")
+        sOutput = sPhotoMaybe
+        with open(sOutputFile, 'w') as fh:
+            sOutput = json.dumps(lPhotoUrl)
+            print >> fh, sOutput
+
     return sOutputFile
 
 
